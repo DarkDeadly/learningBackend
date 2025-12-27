@@ -127,7 +127,8 @@ const authService = {
     },
     profile : async(userId) => {
        return userRepository.findById(userId)
-    }
+    },
+    
 
 };
 
