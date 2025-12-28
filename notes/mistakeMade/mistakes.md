@@ -70,7 +70,23 @@ in the repository u used async await u keep that in the services
 // You don't need it as a parameter.
 // Also: naming conflict with the NEW refreshToken variable below!
  ```
-## JWT Payload 
+#### Mistake 1: Date.now() vs Date.now
+``` JS 
+// ❌ YOUR MISTAKE (RefreshToken model):
+createdAt: {
+    type: Date,
+    default: Date.now()  // Called ONCE when file loads!
+}
+
+// ✅ CORRECTION:
+createdAt: {
+    type: Date,
+    default: Date.now   // Called each time document created
+}
+
+// OR use timestamps: true
+```
+#### JWT Payload 
 
 Jwt takes the payload to use it 
 ``` JS
@@ -87,4 +103,5 @@ here the payload will have id and role when you get the access token the result 
   "exp": 1766799604
 }
 ```
-
+#### Missing Default Error Handler
+always have a Default Error

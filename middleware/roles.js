@@ -15,6 +15,7 @@ const requireRole = (role) => {
 
 const requireTeacher = [auth , requireRole("teacher")]
 const requireAdmin = [auth , requireRole("admin")]
+const requirePupil = [auth , requireRole("pupil")]
 
 
-export {requireTeacher , requireAdmin}
+export {requireTeacher , requireAdmin,requirePupil}

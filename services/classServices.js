@@ -6,8 +6,7 @@ const classroomService = {
 
     create: async (teacherId, name, description, pin) => {
         // Hash the PIN
-        const hashedPin = await passwordHelper.hash(pin);
-        
+        const hashedPin = await passwordHelper.hash(pin);        
         // Create classroom
         const classroom = await classroomRepository.create({
             teacherId,
@@ -77,10 +76,27 @@ const classroomService = {
     },
 
     // Remove pupil from classroom
-    leaveClassroom: async (pupilId) => {
-        await userRepository.removeFromClassroom(pupilId);
-        return { success: true };
+   removePupil: async (teacherId, pupilId, classroomId) => {
+    // Verify classroom belongs to teacher
+    const classroom = await classroomRepository.findById(classroomId);
+    if (!classroom) {
+        throw new Error("Classroom not found");
     }
+    
+    if (classroom.teacherId.toString() !== teacherId.toString()) {
+        throw new Error("Not your classroom");
+    }
+    
+    // Verify pupil is in this classroom
+    const isInClassroom = await userRepository.isInClassroom(pupilId, classroomId);
+    if (!isInClassroom) {
+        throw new Error("Pupil not in this classroom");
+    }
+    
+    // Remove pupil
+    await userRepository.removeFromClassroom(pupilId);
+    return { success: true };
+}
 };
 
 export default classroomService;
