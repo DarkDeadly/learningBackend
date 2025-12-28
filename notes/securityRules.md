@@ -53,3 +53,20 @@ This is called: USER ENUMERATION ATTACK prevention
 8. ROLE-BASED ACCESS
    → Teacher can do X
    → Pupil can do Y
+
+
+   ###  401 vs 403: 
+
+ 
+───────────
+
+401 UNAUTHORIZED:
+  * "Who are you? I don't know you"
+  *  No token, expired token, invalid token
+  *  User needs to LOGIN
+
+403 FORBIDDEN:
+  *  "I know who you are, but you can't do this"
+  *  Valid token, but wrong role
+  *  Pupil trying to access teacher route
+  *  User needs DIFFERENT PERMISSIONS

@@ -8,7 +8,7 @@ import {
     getMyClassrooms, 
     joinClassroom, 
     removePupil, 
-    verifyPin 
+
 } from "../controller/class-controller.js";
 
 const router = express.Router();
@@ -25,7 +25,6 @@ router.post("/leave", auth, requireTeacher, removePupil);
 // PUPIL ROUTES
 // ═══════════════════════════════════════════
 router.post("/:id/join", auth, requirePupil, joinClassroom);
-router.post("/:id/enter", auth, requirePupil, verifyPin);
 
 // ═══════════════════════════════════════════
 // SHARED ROUTES (Any authenticated user)

@@ -22,40 +22,30 @@ const classroomService = {
         return await classroomRepository.findByTeacherId(teacherId);
     },
 
-    joinClassroom: async (pupilId, classroomId) => {
-        // Check classroom exists
-        const classroom = await classroomRepository.findById(classroomId);
-        if (!classroom) {
-            throw new Error("Classroom not found");
-        }
+  joinClassroom: async (pupilId, classroomId, pin) => {
+    // Check classroom exists
+    const classroom = await classroomRepository.findById(classroomId);
+    if (!classroom) {
+        throw new Error("Classroom not found");
+    }
 
-        // Check pupil not already in ANY classroom
-        const alreadyInClassroom = await userRepository.hasClassroom(pupilId);
-        if (alreadyInClassroom) {
-            throw new Error("Already enrolled in a classroom");
-        }
+    // Verify PIN first!
+    const isValidPin = await passwordHelper.compare(pin, classroom.pin);
+    if (!isValidPin) {
+        throw new Error("Invalid PIN");
+    }
 
-        // Update pupil's classroomId
-        await userRepository.updateClassroom(pupilId, classroomId);
-        
-        return { success: true, classroom };
-    },
+    // Check pupil not already in ANY classroom
+    const alreadyInClassroom = await userRepository.hasClassroom(pupilId);
+    if (alreadyInClassroom) {
+        throw new Error("Already enrolled in a classroom");
+    }
 
-    verifyPin: async (classroomId, pin) => {
-        // Find classroom
-        const classroom = await classroomRepository.findById(classroomId);
-        if (!classroom) {
-            throw new Error("Invalid classroom or PIN");
-        }
-
-        // Compare hashed PIN
-        const isValid = await passwordHelper.compare(pin, classroom.pin);
-        if (!isValid) {
-            throw new Error("Invalid classroom or PIN");
-        }
-
-        return { success: true };
-    },
+    // Update pupil's classroomId
+    await userRepository.updateClassroom(pupilId, classroomId);
+    
+    return { success: true, classroom };
+},
 
     getClassroomDetails: async (classroomId) => {
         const classroom = await classroomRepository.findByIdWithTeacher(classroomId);

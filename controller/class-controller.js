@@ -50,9 +50,14 @@ const getMyClassrooms = async (req, res) => {
 const joinClassroom = async (req, res) => {
     const pupilId = req.user.id;
     const classroomId = req.params.id;
+    const { pin } = req.body;  // ADD: Get PIN from body
     
     try {
-        const result = await classroomService.joinClassroom(pupilId, classroomId);
+        const result = await classroomService.joinClassroom(
+            pupilId, 
+            classroomId, 
+            pin  // ADD: Pass PIN
+        );
         
         return res.status(200).json({
             success: true,
@@ -69,40 +74,18 @@ const joinClassroom = async (req, res) => {
                 message: "الفصل غير موجود"
             });
         }
+
+        if (error.message === "Invalid PIN") {
+            return res.status(401).json({
+                success: false,
+                message: "رمز PIN غير صحيح"
+            });
+        }
         
         if (error.message === "Already enrolled in a classroom") {
             return res.status(400).json({
                 success: false,
                 message: "أنت مسجل بالفعل في فصل"
-            });
-        }
-        
-        return res.status(500).json({
-            success: false,
-            message: "Server Error"
-        });
-    }
-};
-
-const verifyPin = async (req, res) => {
-    const classroomId = req.params.id;
-    const { pin } = req.body;
-    
-    try {
-        await classroomService.verifyPin(classroomId, pin);
-        
-        return res.status(200).json({
-            success: true,
-            message: "تم التحقق بنجاح"
-        });
-        
-    } catch (error) {
-        console.error("Verify PIN error:", error);
-        
-        if (error.message === "Invalid classroom or PIN") {
-            return res.status(401).json({
-                success: false,
-                message: "رمز PIN غير صحيح"
             });
         }
         
@@ -216,7 +199,6 @@ export {
     createClass,
     getMyClassrooms,
     joinClassroom,
-    verifyPin,
     getClassroomDetails,
     getClassroomPupils,
     removePupil
