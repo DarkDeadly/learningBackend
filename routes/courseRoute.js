@@ -10,6 +10,7 @@ import {
     removePupil, 
 
 } from "../controller/class-controller.js";
+import { getPupilHistory, givePoints, removePoints } from "../controller/point-controller.js";
 
 const router = express.Router();
 
@@ -20,6 +21,9 @@ router.post("/", auth, requireTeacher, createClass);
 router.get("/my", auth, requireTeacher, getMyClassrooms);
 router.get("/:id/pupils", auth, requireTeacher, getClassroomPupils);
 router.post("/leave", auth, requireTeacher, removePupil);
+router.post("/:id/points/give" , auth , requireTeacher , givePoints)
+router.post("/:id/points/remove" , auth , requireTeacher , removePoints)
+router.get("/:id/points/:pupilId" , auth , requireTeacher , getPupilHistory)
 
 // ═══════════════════════════════════════════
 // PUPIL ROUTES

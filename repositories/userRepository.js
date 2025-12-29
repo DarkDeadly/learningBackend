@@ -56,6 +56,14 @@ const userRepository = {
             { classroomId: null },
             { new: true }
         );
+    },
+    // Updating the points
+    updatePoints : async(userId , point) => {
+        return await User.findByIdAndUpdate(
+            userId , 
+            {$inc : {pointBalance : point}},
+            { new: true }
+        )
     }
 };
 
