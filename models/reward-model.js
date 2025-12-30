@@ -31,9 +31,6 @@ const rewardSchema = new mongoose.Schema({
     timestamps: true 
 });
 
-// Auto-delete expired rewards
-rewardSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-
 const Reward = mongoose.model("Reward", rewardSchema);
 
 export default Reward;

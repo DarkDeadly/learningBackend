@@ -6,6 +6,10 @@ const rewardPurchaseSchema = new mongoose.Schema({
         ref: "Reward",
         required: true
     },
+    rewardName : {
+        type : String , 
+        required : true
+    },
     pupilId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
