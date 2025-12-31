@@ -9,7 +9,7 @@ import auth from "../middleware/auth.js"
 const router = express.Router()
 
 router.post("/register" , AuthRateLimit , validate(registrationSchema) ,register)
-router.post("/login" , validate(loginSchema) , login)
+router.post("/login" , AuthRateLimit , validate(loginSchema) , login)
 router.post("/refresh" , refreshAccess)
 router.post("/logout" , logout)
 router.post("/logoutAll" , auth , logoutAllDevices)

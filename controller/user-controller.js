@@ -176,11 +176,31 @@ const logoutAllDevices = async (req, res) => {
     }
 };
 
-const currentUser = async(req , res) => {
-    const userId = req.user.id
-    const result = await authService.profile(userId)
-    return res.status(200).json({user : result})
-}
-
+const currentUser = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const result = await authService.profile(userId);
+        
+        // User might have been deleted
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        
+        return res.status(200).json({
+            success: true,
+            user: result
+        });
+        
+    } catch (error) {
+        console.error("Profile error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+    }
+};
 
 export {logout , refreshAccess , login , register , logoutAllDevices , currentUser}

@@ -70,3 +70,18 @@ This is called: USER ENUMERATION ATTACK prevention
   *  Valid token, but wrong role
   *  Pupil trying to access teacher route
   *  User needs DIFFERENT PERMISSIONS
+  
+9. SELECT: FALSE FOR SENSITIVE FIELDS
+   → Password hidden by default in queries
+   → Must explicitly select("+password")
+   → Defense in depth
+
+10. COOKIE SECURITY TRIAD
+    → httpOnly: true    (prevents XSS reading cookie)
+    → secure: true      (HTTPS only in production)
+    → sameSite: strict  (prevents CSRF attacks)
+
+11. TTL INDEXES
+    → Auto-delete expired tokens from database
+    → Self-cleaning data
+    → { expiresAt: 1 }, { expireAfterSeconds: 0 }

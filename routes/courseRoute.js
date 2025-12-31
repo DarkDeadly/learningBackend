@@ -27,7 +27,7 @@ router.post("/:id/points/remove" , auth , requireTeacher , removePoints)
 router.get("/:id/points/:pupilId" , auth , requireTeacher , getPupilHistory)
 //Rewards 
 router.post("/:id/rewards" ,auth , requireTeacher , createReward )
-router.get(":id/rewards" , auth , requireTeacher , getClassroomRewards)
+router.get("/:id/rewards" , auth , requireTeacher , getClassroomRewards)
 
 // ═══════════════════════════════════════════
 // PUPIL ROUTES

@@ -7,7 +7,7 @@ const requireRole = (role) => {
             return res.status(401).json({message : "not Authenticated"})
         }
         if (req.user.role !== role){
-            return res.status(400).json({message : `Access denied. ${role} role required.`})
+            return res.status(403).json({message : `Access denied. ${role} role required.`})
         }
         next()
     }

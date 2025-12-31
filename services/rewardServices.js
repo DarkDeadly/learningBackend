@@ -50,15 +50,15 @@ const rewardService = {
         const availableRewards = await rewardRepository.findByClassroom(pupilClassroom , false)
         //Step 4: Get pupil's purchase history
         const purchases = await purchaseRepository.findByPupil(pupilId)
-        const purchasedRewardIds = purchases.map(p => p.rewardId.toString());
-        // Step 4: Enhance each reward with affordability and purchase status
+        const purchasedRewardIds = new Set(purchases.map(p => p.rewardId.toString()))
+        // Step 5: Enhance each reward with affordability and purchase status
         const enhancedRewardFilter = availableRewards.map(reward => ({
              _id: reward._id,
             name: reward.name,
             cost: reward.cost,
             expiresAt: reward.expiresAt,
             canAfford : pupil.pointBalance >= reward.cost,
-            alreadyPurchased : purchasedRewardIds.includes(reward._id.toString())
+            alreadyPurchased : purchasedRewardIds.has(reward._id.toString())
         }))
         return {rewards : enhancedRewardFilter , currentPoints : pupil.pointBalance}
     },

@@ -53,3 +53,16 @@ we separate the work into many layers and here what each layer do
 
   * Processes requests BEFORE they reach controller.
   * Chain of responsibility.
+
+# Lesson 2 - Advanced Patterns
+
+## TRANSACTIONS (Atomicity)
+─────────────────────────────
+
+When multiple database operations MUST succeed together:
+
+### The Problem:
+```javascript
+await purchaseRepository.create({...});  // ✓ Success
+await userRepository.updatePoints(...);   // ✗ Fails
+// Purchase exists, but points not deducted!
