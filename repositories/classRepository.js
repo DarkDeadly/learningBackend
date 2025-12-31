@@ -26,7 +26,8 @@ const classRepository = {
 
     delete: async (classroomId) => {
         return await Classroom.findByIdAndDelete(classroomId);
-    }
+    },
+   
 }
 
 export default classRepository

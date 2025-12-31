@@ -19,7 +19,8 @@ const classroomSchema = new mongoose.Schema({
     },
     pin: {
         type: String,
-        required: [true, "PIN is required"]
+        required: [true, "PIN is required"],
+        select : false
         // Store HASHED!
     },
     isActive: {

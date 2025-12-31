@@ -1,3 +1,4 @@
+import classRepository from "../repositories/classRepository.js";
 import classroomRepository from "../repositories/classRepository.js";
 import userRepository from "../repositories/userRepository.js";
 import passwordHelper from "../utils/password-helper.js";
@@ -28,7 +29,9 @@ const classroomService = {
     if (!classroom) {
         throw new Error("Classroom not found");
     }
-
+    if (!classroom.isActive) {
+        throw new Error("Classroom is not active");
+    }
     // Verify PIN first!
     const isValidPin = await passwordHelper.compare(pin, classroom.pin);
     if (!isValidPin) {
@@ -47,46 +50,64 @@ const classroomService = {
     return { success: true, classroom };
 },
 
-    getClassroomDetails: async (classroomId) => {
+    getClassroomDetails: async (classroomId , userId) => {
         const classroom = await classroomRepository.findByIdWithTeacher(classroomId);
         if (!classroom) {
             throw new Error("Classroom not found");
         }
+        const isTeacher = classroom.teacherId.toString() === userId.toString()
+        const isPupil = await userRepository.isInClassroom(userId , classroomId)
+         if (!isTeacher && !isPupil) {
+        throw new Error("Access denied");
+    }
         return classroom;
     },
 
     // Get pupils in a classroom
-    getClassroomPupils: async (classroomId) => {
+    getClassroomPupils: async (classroomId ) => {
+        const classroom = await classroomRepository.findById(classroomId);
+        if (!classroom) {
+            throw new Error("Classroom not found");
+        }
+      
+        return await userRepository.findPupilsByClassroom(classroomId);
+    },
+
+    // Remove pupil from classroom
+  removePupil: async (teacherId, pupilId, classroomId) => {
+        // Guard 1: Classroom exists and teacher owns it
         const classroom = await classroomRepository.findById(classroomId);
         if (!classroom) {
             throw new Error("Classroom not found");
         }
         
-        return await userRepository.findPupilsByClassroom(classroomId);
+        if (classroom.teacherId.toString() !== teacherId.toString()) {
+            throw new Error("Not your classroom");
+        }
+        
+        // Guard 2: Pupil is in this classroom
+        const isInClassroom = await userRepository.isInClassroom(pupilId, classroomId);
+        if (!isInClassroom) {
+            throw new Error("Pupil not in this classroom");
+        }
+        
+        // Happy path
+        await userRepository.removeFromClassroom(pupilId);
+        return { success: true };
     },
-
-    // Remove pupil from classroom
-   removePupil: async (teacherId, pupilId, classroomId) => {
-    // Verify classroom belongs to teacher
-    const classroom = await classroomRepository.findById(classroomId);
-    if (!classroom) {
-        throw new Error("Classroom not found");
+      deactivateClassroom: async (teacherId, classroomId) => {
+        const classroom = await classRepository.findById(classroomId);
+        if (!classroom) {
+            throw new Error("Classroom not found");
+        }
+        
+        if (classroom.teacherId.toString() !== teacherId.toString()) {
+            throw new Error("Not your classroom");
+        }
+        
+        await classRepository.update(classroomId, { isActive: false });
+        return { success: true };
     }
-    
-    if (classroom.teacherId.toString() !== teacherId.toString()) {
-        throw new Error("Not your classroom");
-    }
-    
-    // Verify pupil is in this classroom
-    const isInClassroom = await userRepository.isInClassroom(pupilId, classroomId);
-    if (!isInClassroom) {
-        throw new Error("Pupil not in this classroom");
-    }
-    
-    // Remove pupil
-    await userRepository.removeFromClassroom(pupilId);
-    return { success: true };
-}
 };
 
 export default classroomService;
