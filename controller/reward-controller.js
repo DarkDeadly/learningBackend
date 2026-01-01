@@ -44,7 +44,7 @@ const updateReward = async (req , res) => {
             rewardId, 
             updateData
         )
-        return res.status(201).json({success ,message : "تم تحديث البيانات بنجاح", reward})
+        return res.status(200).json({success ,message : "تم تحديث البيانات بنجاح", reward})
     } catch (error) {
         return handleServiceError(res, error)
     }

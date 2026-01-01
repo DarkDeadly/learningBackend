@@ -4,19 +4,38 @@ import purchaseRepository from "../repositories/purchaseRepository.js";
 import rewardRepository from "../repositories/rewardRepository.js";
 import userRepository from "../repositories/userRepository.js";
 
+const verifyClassroomOwnership = async (teacherId, classroomId) => {
+    const classroom = await classRepository.findById(classroomId);
+    if (!classroom) {
+        throw new Error("Classroom not found");
+    }
+    if (classroom.teacherId.toString() !== teacherId.toString()) {
+        throw new Error("Not your classroom");
+    }
+    return classroom;
+};
+
+const verifyRewardOwnership = async (teacherId, rewardId) => {
+    const reward = await rewardRepository.findById(rewardId);
+    if (!reward) {
+        throw new Error("Reward not found");
+    }
+    if (reward.teacherId.toString() !== teacherId.toString()) {
+        throw new Error("Not your reward");
+    }
+    return reward;
+};
+
 const rewardService = {
 
     create: async (teacherId, classroomId, name , cost , expiresAt) => {
-        // Step 1: Verify classroom exists
-        const classCheck = await classRepository.findById(classroomId)
-        if(!classCheck){throw new Error("Resource not found")}
-        // Step 2: Verify teacher owns classroom
-        const teacherOwnerShip = classCheck.teacherId.toString() === teacherId.toString()
-        if(!teacherOwnerShip){throw new Error("Resource not found")}
-        // Step 3: Validate expiresAt is future
+        // Step 1: Teacher Verification
+         await verifyClassroomOwnership(teacherId, classroomId) 
+
+        // Step 2: Validate expiresAt is future
         const expireDateValidity = expiresAt > new Date()
         if (!expireDateValidity) {throw new Error("Expiration date must be in the future")}
-        // Step 4: Create reward
+        // Step 3: Create reward
         const result = await rewardRepository.create({
             name , 
             cost,
@@ -24,17 +43,12 @@ const rewardService = {
             teacherId,
             expiresAt
         })
-        // Step 5: Return result
+        // Step 4: Return result
         return {success : true , reward : result}
     },
 
     getByClassroom: async (teacherId, classroomId) => {
-        // Step 1: Verify classroom exists
-         const classCheck = await classRepository.findById(classroomId)
-        if(!classCheck){throw new Error("Resource not found")}
-        // Step 2: Verify teacher owns classroom
-        const teacherOwnerShip = classCheck.teacherId.toString() === teacherId.toString()
-        if(!teacherOwnerShip){throw new Error("Resource not found")}
+         await verifyClassroomOwnership(teacherId, classroomId) 
         const result = await rewardRepository.findByClassroom(classroomId , true)
         return {reward : result}
     },
@@ -65,11 +79,7 @@ const rewardService = {
 
     update: async (teacherId, rewardId, updateData) => {
         // Step 1: Verify reward exists
-        const rewardValidity = await rewardRepository.findById(rewardId)
-        if (!rewardValidity) { throw new Error("Resource not found") }
-        // Step 2: Verify teacher owns reward
-        const teacherOwnership = rewardValidity.teacherId.toString() === teacherId.toString()
-        if(!teacherOwnership) {throw new Error("Resource not found")}
+        await verifyRewardOwnership(teacherId , rewardId)
         // Step 3: Validate expiresAt if provided
         if (updateData.expiresAt){ //check if the teacher  updated the expired Date
             const expiresAt = new Date(updateData.expiresAt); //setting it up 
@@ -99,12 +109,7 @@ const rewardService = {
 },
 
     delete: async (teacherId, rewardId) => {
-        const rewardValidity = await rewardRepository.findById(rewardId)
-        if (!rewardValidity) { throw new Error("Resource not found") }
-        // Step 2: Verify teacher owns reward
-        const teacherOwnership = rewardValidity.teacherId.toString() === teacherId.toString()
-        if(!teacherOwnership) {throw new Error("Resource not found")}   
-        // Step 3: Delete
+       await verifyRewardOwnership(teacherId , rewardId)
         await rewardRepository.delete(rewardId)
         return {success : true};
 

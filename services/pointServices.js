@@ -1,24 +1,28 @@
 import classRepository from "../repositories/classRepository.js";
 import pointRepository from "../repositories/pointRepository.js"
 import userRepository from "../repositories/userRepository.js"
+
+const verifyTeacherPupilAccess = async (teacherId, pupilId, classroomId) => {
+    const classroom = await classRepository.findById(classroomId);
+    if (!classroom) {
+        throw new Error("Classroom not found");
+    }
+    if (classroom.teacherId.toString() !== teacherId.toString()) {
+        throw new Error("Not your classroom");
+    }
+    const isInClassroom = await userRepository.isInClassroom(pupilId, classroomId);
+    if (!isInClassroom) {
+        throw new Error("Pupil not in this classroom");
+    }
+    return classroom;
+};
+
+
+
 const pointService = {
    givePoints: async (teacherId, pupilId, classroomId, amount, reason) => {
-        // Verify classroom exists
-        const classroom = await classRepository.findById(classroomId);
-        if (!classroom) {
-            throw new Error("Classroom not found");
-        }
-
-        // Verify teacher owns this classroom
-        if (classroom.teacherId.toString() !== teacherId.toString()) {
-            throw new Error("Not your classroom");
-        }
-
-        // Verify pupil is in this classroom
-        const isInClassroom = await userRepository.isInClassroom(pupilId, classroomId);
-        if (!isInClassroom) {
-            throw new Error("Pupil not in this classroom");
-        }
+        // Verify classroom , ownership and pupil exists
+       await verifyTeacherPupilAccess(teacherId , pupilId , classroomId)
 
         // Create transaction
         const transaction = await pointRepository.create({
@@ -36,22 +40,8 @@ const pointService = {
         return { success: true, transaction };
     },
     removePoints : async (teacherId, pupilId, classroomId, amount, reason) => {
-        // Verify classroom exists
-        const classroom = await classRepository.findById(classroomId);
-        if (!classroom) {
-            throw new Error("Classroom not found");
-        }
-
-        // Verify teacher owns this classroom
-        if (classroom.teacherId.toString() !== teacherId.toString()) {
-            throw new Error("Not your classroom");
-        }
-
-        // Verify pupil is in this classroom
-        const isInClassroom = await userRepository.isInClassroom(pupilId, classroomId);
-        if (!isInClassroom) {
-            throw new Error("Pupil not in this classroom");
-        }
+         // Verify classroom , ownership and pupil exists
+      await verifyTeacherPupilAccess(teacherId , pupilId , classroomId)
         // Create transaction
         const transaction = await pointRepository.create({
             pupilId,
@@ -67,7 +57,8 @@ const pointService = {
 
         return { success: true, transaction };
     },
-    getHistory : async(pupilId) => {
+    getHistory : async(teacherId , pupilId , classroomId) => {
+       await verifyTeacherPupilAccess(teacherId , pupilId , classroomId)
        return await pointRepository.findByPupilId(pupilId) 
     }
     }

@@ -104,3 +104,41 @@ AS A PUPIL:
   - Points are deducted from my balance
   - I CANNOT purchase the same reward again
 
+─────────────────────────────────────────────────────────────┐
+│                    CLASSROOM ENDPOINTS                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   BASE: /api/classrooms                                     │
+│                                                             │
+│   CLASSROOM:                                                │
+│   POST   /                          → Create classroom      │
+│   GET    /my                        → My classrooms         │
+│   GET    /:id                       → Classroom details     │
+│   DELETE /:id                       → Deactivate            │
+│                                                             │
+│   PUPILS:                                                   │
+│   GET    /:id/pupils                → List pupils           │
+│   POST   /:id/join                  → Join classroom        │
+│   DELETE /:id/pupils/:pupilId       → Remove pupil          │
+│                                                             │
+│   POINTS:                                                   │
+│   POST   /:id/points/give           → Give points           │
+│   POST   /:id/points/remove         → Remove points         │
+│   GET    /:id/points/:pupilId       → Pupil history         │
+│                                                             │
+│   REWARDS:                                                  │
+│   POST   /:id/rewards               → Create reward         │
+│   GET    /:id/rewards               → List rewards          │
+│                                                             │
+│   COURSES: 🆕                                               │
+│   POST   /:id/courses               → Create course         │
+│   GET    /:id/courses               → List courses          │
+│   GET    /:id/courses/:courseId     → Course details        │
+│   PATCH  /:id/courses/:courseId     → Update course         │
+│   DELETE /:id/courses/:courseId     → Delete course         │
+│                                                             │
+│   MATERIALS: 🆕                                             │
+│   POST   /:id/courses/:courseId/materials     → Upload      │
+│   DELETE /:id/courses/:courseId/materials/:materialId       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
