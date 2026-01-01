@@ -6,6 +6,7 @@ import userRoute from "./routes/userRoutes.js"
 import classRoute from "./routes/courseRoute.js"
 import rewardRoute from "./routes/rewardRoute.js"
 import cors from "cors"
+import job from "./config/cron.js"
 const app = express()
 const port = process.env.PORT || 5100
 
@@ -13,6 +14,7 @@ app.use(cors({
     origin: '*',  // Allow all origins for mobile app
     credentials: true
 }));
+if (process.env.NODE_ENV === "production") job.start()
 connectMongoDB()
 app.use(express.json())
 app.use(cookieParser())
