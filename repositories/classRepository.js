@@ -27,6 +27,9 @@ const classRepository = {
     delete: async (classroomId) => {
         return await Classroom.findByIdAndDelete(classroomId);
     },
+    findAll: async () => {
+        return await Classroom.find().populate("teacherId" , "fullname email")
+    },
    
 }
 

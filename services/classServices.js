@@ -107,6 +107,13 @@ const classroomService = {
         
         await classRepository.update(classroomId, { isActive: false });
         return { success: true };
+    },
+    getallclassrooms : async () => {
+        const classroom = await classRepository.findAll()
+        if (!classroom) {
+            throw new Error("there is no classrooms");
+        }
+        return {success : true , class : classroom}
     }
 };
 

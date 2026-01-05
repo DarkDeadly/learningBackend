@@ -265,6 +265,21 @@ const removePupil = async (req, res) => {
     }
 };
 
+
+const getAllClasses = async (req , res) => {
+    try {
+      const result = await classroomService.getallclassrooms()
+      return res.status(200).json({success : result.success , classrooms : result.class})  
+    } catch (error) {
+      if (error.message === "there is no classrooms")  {
+        return res.status(400).json({
+            success : false , 
+            message : "لم يتم العثور على أي فصول دراسية"
+        })
+      }
+    }
+}
+
 export {
     createClass,
     getMyClassrooms,
@@ -272,5 +287,6 @@ export {
     getClassroomDetails,
     getClassroomPupils,
     removePupil,
-    deactivateClass
+    deactivateClass,
+    getAllClasses
 };

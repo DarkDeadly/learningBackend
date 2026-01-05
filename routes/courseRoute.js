@@ -6,6 +6,7 @@ import { requirePupil, requireTeacher } from "../middleware/roles.js";
 import { 
     createClass, 
     deactivateClass, 
+    getAllClasses, 
     getClassroomDetails, 
     getClassroomPupils, 
     getMyClassrooms, 
@@ -88,5 +89,6 @@ router.post("/:id/join", auth, validate(joinClassSchema), requirePupil, joinClas
 router.get("/:id", auth, getClassroomDetails);
 router.get("/:id/courses", auth, getCourses);  // 🆕 Both can view courses
 router.get("/:id/courses/:courseId", auth, getCourseDetails);  // 🆕 Both can view details
+router.get('/', auth , getAllClasses)
 
 export default router;
