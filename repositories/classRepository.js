@@ -6,7 +6,7 @@ const classRepository = {
         
     },
     findById : async(classId) => {
-        return await Classroom.findById(classId)
+        return await Classroom.findById(classId).select("+pin");
     },
     findByTeacherId : async (teacherId) => {
         return await Classroom.find({teacherId})

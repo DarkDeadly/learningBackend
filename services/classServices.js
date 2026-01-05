@@ -32,6 +32,7 @@ const classroomService = {
     if (!classroom.isActive) {
         throw new Error("Classroom is not active");
     }
+    
     // Verify PIN first!
     const isValidPin = await passwordHelper.compare(pin, classroom.pin);
     if (!isValidPin) {
