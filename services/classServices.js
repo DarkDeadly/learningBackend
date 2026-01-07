@@ -56,7 +56,7 @@ const classroomService = {
         if (!classroom) {
             throw new Error("Classroom not found");
         }
-        const isTeacher = classroom.teacherId.toString() === userId.toString()
+        const isTeacher = classroom.teacherId._id.toString() === userId.toString()
         const isPupil = await userRepository.isInClassroom(userId , classroomId)
          if (!isTeacher && !isPupil) {
         throw new Error("Access denied");
@@ -82,7 +82,7 @@ const classroomService = {
             throw new Error("Classroom not found");
         }
         
-        if (classroom.teacherId.toString() !== teacherId.toString()) {
+        if (classroom.teacherId._id.toString() !== teacherId.toString()) {
             throw new Error("Not your classroom");
         }
         
@@ -102,7 +102,7 @@ const classroomService = {
             throw new Error("Classroom not found");
         }
         
-        if (classroom.teacherId.toString() !== teacherId.toString()) {
+        if (classroom.teacherId._id.toString() !== teacherId.toString()) {
             throw new Error("Not your classroom");
         }
         

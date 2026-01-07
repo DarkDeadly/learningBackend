@@ -165,7 +165,8 @@ const getClassroomPupils = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            pupils
+            pupils,
+            counts : pupils.length
         });
 
     } catch (error) {
