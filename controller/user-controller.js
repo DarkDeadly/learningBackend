@@ -38,7 +38,7 @@ const register = async (req, res) => {
     } catch (error) {
         console.error("Register error:", error);
         
-        if (error.message === "Email already registered") {
+        if (error.message === "Email already registered !") {
             return res.status(409).json({ 
                 success: false, 
                 message: "عنوان البريد الإلكتروني مسجّل مسبقًا" 
