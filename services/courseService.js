@@ -15,7 +15,7 @@ const verifyCourseOwnership = async (teacherId, courseId) => {
     if (!course) {
         throw new Error("Course not found");
     }
-    if (course.teacherId.toString() !== teacherId.toString()) {
+    if (course.teacherId._id.toString() !== teacherId.toString()) {
         throw new Error("Not your course");  // Fixed: throw not return
     }
     return course;
@@ -26,7 +26,7 @@ const verifyClassroomOwnership = async (teacherId, classroomId) => {
     if (!classroom) {
         throw new Error("Classroom not found");
     }
-    if (classroom.teacherId.toString() !== teacherId.toString()) {
+    if (classroom.teacherId._id.toString() !== teacherId.toString()) {
         throw new Error("Not your classroom");
     }
     return classroom;
