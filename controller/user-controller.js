@@ -28,7 +28,9 @@ const register = async (req, res) => {
                 id: user._id,
                 fullname: user.fullname,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                pointBalance: user.pointBalance
+
             },
             accessToken
         });
@@ -68,7 +70,9 @@ const login = async (req, res) => {
                 id: user._id,
                 fullname: user.fullname,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                pointBalance: user.pointBalance
+
             },
             accessToken
         });
