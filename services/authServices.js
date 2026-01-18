@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import tokenRepository from "../repositories/tokenRepository.js";
 import userRepository from "../repositories/userRepository.js";
 import { getExpirationDate } from "../utils/expirationDate.js";
@@ -16,28 +17,37 @@ const authService = {
 
         // Hash password
         const hashedPassword = await passwordUtils.hash(password);
-
-        // Create user
-        const user = await userRepository.create({
-            fullname,
-            email,
-            password: hashedPassword
-        });
-
-        // Generate tokens
-        const accessToken = generateTokens.accessToken(user._id  , user.role);
-        const refreshToken = generateTokens.refreshToken();
-
-        // Save refresh token (hashed!)
-        const hashedRefreshToken = hashToken(refreshToken);
-        await tokenRepository.create({
-            token: hashedRefreshToken,
-            userId: user._id,
-            expiresAt: getExpirationDate(15)
-        });
-
-        // Return plain refreshToken (for cookie)
-        return { user, accessToken, refreshToken };
+        //Getting the session started 
+        const session = await mongoose.startSession()
+        session.startTransaction();
+        try {
+          // Create user
+            const user = await userRepository.create(
+                [{ fullname, email, password: hashedPassword }], 
+                { session }
+        );
+            const newUser = user[0]; // Mongoose returns an array when using sessions  
+            const accessToken = generateTokens.accessToken(newUser._id  , newUser.role);
+            const refreshToken = generateTokens.refreshToken();
+            const hashedRefreshToken = hashToken(refreshToken);
+            await tokenRepository.create(
+                [{
+                    token: hashedRefreshToken,
+                    userId: newUser._id,
+                    expiresAt: getExpirationDate(15)
+                }], 
+                { session }
+        );
+        // 5. THE COMMIT: If we reached here, save everything forever
+        await session.commitTransaction();
+        return { user: newUser, accessToken, refreshToken };
+        } catch (error) {
+            // 6. THE ROLLBACK: If anything failed, undo everything
+            await session.abortTransaction();
+            throw error; 
+        }finally {
+            session.endSession();
+        }
     },
 
     login: async (email, password) => {
