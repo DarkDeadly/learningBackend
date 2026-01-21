@@ -1,4 +1,3 @@
-import classRepository from "../repositories/classRepository.js";
 import classroomRepository from "../repositories/classRepository.js";
 import userRepository from "../repositories/userRepository.js";
 import passwordHelper from "../utils/password-helper.js";
@@ -46,9 +45,9 @@ const classroomService = {
     }
 
     // Update pupil's classroomId
-    await userRepository.updateClassroom(pupilId, classroomId);
+    const result = await userRepository.updateClassroom(pupilId, classroomId);
     
-    return { success: true, classroom };
+    return { success: true, classroom , update : result};
 },
 
     getClassroomDetails: async (classroomId , userId) => {
@@ -97,7 +96,7 @@ const classroomService = {
         return { success: true };
     },
       deactivateClassroom: async (teacherId, classroomId) => {
-        const classroom = await classRepository.findById(classroomId);
+        const classroom = await classroomRepository.findById(classroomId);
         if (!classroom) {
             throw new Error("Classroom not found");
         }
@@ -110,8 +109,8 @@ const classroomService = {
         return { success: true };
     },
     getallclassrooms : async () => {
-        const classroom = await classRepository.findAll()
-        if (!classroom) {
+        const classroom = await classroomRepository.findAll()
+        if (classroom.length === 0) {
             throw new Error("there is no classrooms");
         }
         return {success : true , class : classroom}
