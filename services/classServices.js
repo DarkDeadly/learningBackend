@@ -105,7 +105,7 @@ const classroomService = {
             throw new Error("Not your classroom");
         }
         
-        await classRepository.update(classroomId, { isActive: false });
+        await classroomRepository.update(classroomId, { isActive: false });
         return { success: true };
     },
     getallclassrooms : async () => {

@@ -53,30 +53,30 @@ const rewardService = {
         return {reward : result}
     },
     
-    getAvailableForPupil: async (pupilId ) => {
-        //Step 1: Check if pupil belong in classroom 
-        const pupil = await userRepository.findById(pupilId)
-        if(!pupil){throw new Error("Resource not found")}
-        //Step 2 : Get classroomId
-        const pupilClassroom = pupil.classroomId
-        if(!pupilClassroom){throw new Error("Not enrolled in any classroom")}
-        //Step 3 : Get available rewards 
-        const availableRewards = await rewardRepository.findByClassroom(pupilClassroom , false)
-        //Step 4: Get pupil's purchase history
-        const purchases = await purchaseRepository.findByPupil(pupilId)
-        const purchasedRewardIds = new Set(purchases.map(p => p.rewardId.toString()))
-        // Step 5: Enhance each reward with affordability and purchase status
-        const enhancedRewardFilter = availableRewards.map(reward => ({
-             _id: reward._id,
-            name: reward.name,
-            cost: reward.cost,
-            expiresAt: reward.expiresAt,
-            canAfford : pupil.pointBalance >= reward.cost,
-            alreadyPurchased : purchasedRewardIds.has(reward._id.toString())
-        }))
-        return {rewards : enhancedRewardFilter , currentPoints : pupil.pointBalance}
-    },
+    getAvailableForPupil: async (pupilId) => {
+    // 1. Get Pupil data for balance check
+    const pupil = await userRepository.findById(pupilId);
+    if (!pupil || !pupil.classroomId) {
+        throw new Error("Pupil not enrolled in a classroom");
+    }
 
+    // 2. Use the Aggregation we just built
+    const rewards = await rewardRepository.getPupilRewardsWithStatus(
+        pupil.classroomId, 
+        pupilId
+    );
+
+    // 3. Add the 'canAfford' logic in a simple map
+    const enhancedRewards = rewards.map(reward => ({
+        ...reward,
+        canAfford: pupil.pointBalance >= reward.cost
+    }));
+
+    return { 
+        rewards: enhancedRewards, 
+        currentPoints: pupil.pointBalance 
+    };
+},
     update: async (teacherId, rewardId, updateData) => {
         // Step 1: Verify reward exists
         await verifyRewardOwnership(teacherId , rewardId)
@@ -114,83 +114,64 @@ const rewardService = {
         return {success : true};
 
     },
-    purchase: async (pupilId, rewardId) => {
-    // Step 1: Get pupil
-    const pupil = await userRepository.findById(pupilId);
-    if (!pupil) {
-        throw new Error("Resource not found");
+purchase: async (pupilId, rewardId) => {
+    // 1. Create the session
+    const session = await mongoose.startSession();
+    
+    try {
+        let result;
+        // 2. Execute the transaction
+        await session.withTransaction(async () => {
+            
+            // 3. Get the reward (using the session ticket)
+            const reward = await rewardRepository.findById(rewardId, session);
+            if (!reward) throw new Error("Reward not found");
+            if (reward.expiresAt <= new Date()) throw new Error("Reward has expired");
+
+            // 4. THE ATOMIC STEP
+            // We try to deduct points. If the user doesn't have enough, 
+            // the DB returns null and we stop immediately.
+            const updatedUser = await userRepository.deductPointsAtomic(pupilId, reward.cost, session);
+            
+            if (!updatedUser) {
+                throw new Error("Insufficient points or user not found");
+            }
+
+            // 5. Audit Trail (Always use arrays [] for create + session)
+            await purchaseRepository.create([{
+                rewardId,
+                rewardName: reward.name,
+                pupilId,
+                classroomId: reward.classroomId,
+                pointsSpent: reward.cost
+            }], session);
+
+            // This ensures the student's "Point History" matches their "Purchases"
+            await pointRepository.create([{
+                pupilId,
+                classroomId: reward.classroomId,
+                amount: -reward.cost,
+                type: "spent",
+                reason: `شراء مكافأة: ${reward.name}`
+            }], session);
+
+            result = { 
+                success: true, 
+                newBalance: updatedUser.pointBalance 
+            };
+        });
+
+        return result;
+
+    } catch (error) {
+        // If anything failed inside withTransaction, 
+        // MongoDB automatically rolls back all changes.
+        throw error; 
+    } finally {
+        // Always close the session
+        await session.endSession();
     }
-    
-    // Step 2: Check pupil is enrolled
-    if (!pupil.classroomId) {
-        throw new Error("Not enrolled in any classroom");
-    }
-    
-    // Step 3: Get reward
-    const reward = await rewardRepository.findById(rewardId);
-    if (!reward) {
-        throw new Error("Resource not found");
-    }
-    
-    // Step 4: Check reward is in pupil's classroom
-    if (reward.classroomId.toString() !== pupil.classroomId.toString()) {
-        throw new Error("Reward not in your classroom");
-    }
-    
-    // Step 5: Check reward is not expired
-    if (reward.expiresAt <= new Date()) {
-        throw new Error("Reward has expired");
-    }
-    
-    // Step 6: Check not already purchased
-    const alreadyPurchased = await purchaseRepository.hasPurchased(pupilId, rewardId);
-    if (alreadyPurchased) {
-        throw new Error("Already purchased this reward");
-    }
-    
-    // Step 7: Check sufficient points
-    if (pupil.pointBalance < reward.cost) {
-        throw new Error("Insufficient points");
-    }
-    
-    // ═══════════════════════════════════════════
-    // All validations passed. Execute purchase.
-    // ═══════════════════════════════════════════
-    
-    // Step 8: Create purchase record
-    const purchase = await purchaseRepository.create({
-        rewardId: rewardId,
-        rewardName: reward.name,
-        pupilId: pupilId,
-        classroomId: pupil.classroomId,
-        pointsSpent: reward.cost
-    });
-    
-    // Step 9: Deduct points from pupil
-    const updatedPupil = await userRepository.updatePoints(pupilId, -reward.cost);
-    
-    // Step 10: Create point transaction record
-    await pointRepository.create({
-        pupilId: pupilId,
-        classroomId: pupil.classroomId,
-        amount: -reward.cost,
-        type: "spent",
-        reason: `شراء مكافأة: ${reward.name}`,
-        givenBy: null
-    });
-    
-    // Return result
-    return {
-        success: true,
-        purchase: {
-            id: purchase._id,
-            rewardName: reward.name,
-            pointsSpent: reward.cost,
-            purchasedAt: purchase.createdAt
-        },
-        newBalance: updatedPupil.pointBalance
-    };
-}
+},
 
 };
 

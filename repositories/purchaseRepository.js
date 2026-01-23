@@ -1,31 +1,31 @@
 import RewardPurchase from "../models/reward-purchase.js";
 
 const purchaseRepository = {
-    
-    // Record a new purchase
-    create: async (purchaseData) => {
-        return await RewardPurchase.create(purchaseData)
+    // UPDATED: Added session parameter
+    create: async (purchaseData, session = null) => {
+        // Mongoose requires an array for create when using sessions
+        return await RewardPurchase.create(
+            Array.isArray(purchaseData) ? purchaseData : [purchaseData], 
+            { session }
+        );
     },
     
-    // Check if pupil already bought this specific reward
-    hasPurchased: async (pupilId, rewardId) => { 
-    const purchase = await RewardPurchase.findOne({
-        pupilId: pupilId,
-        rewardId: rewardId
-    });
+    // UPDATED: Added session to findOne
+    hasPurchased: async (pupilId, rewardId, session = null) => { 
+        const purchase = await RewardPurchase.findOne({
+            pupilId: pupilId,
+            rewardId: rewardId
+        }).session(session); // Tell Mongo to check within the transaction
+        
+        return !!purchase;
+    },
     
-    return !!purchase;
-    
-    
-},
-    
-    // Get all purchases by a pupil (for their history)
     findByPupil: async (pupilId) => {
-        // Returns: array of purchases
-    return await RewardPurchase
-        .find({ pupilId: pupilId })
-        .sort({ createdAt: -1 });    }
-    
+        return await RewardPurchase
+            .find({ pupilId: pupilId })
+            .sort({ createdAt: -1 })
+            .lean(); // Senior Tip: Use .lean() for faster read-only history
+    }
 };
 
 export default purchaseRepository

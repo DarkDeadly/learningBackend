@@ -16,21 +16,26 @@ const userRepository = {
         return await query;
     },
 
-    findById: async (id) => {
-        return await User.findById(id);
+   findById: async (id, session = null) => {
+        return await User.findById(id).session(session);
     },
 
-    // Check if pupil is in ANY classroom
+    // OPTIMIZATION: Instead of fetching the whole user, just use .exists()
+    // This is faster because Mongo doesn't have to send the whole document over the network.
     hasClassroom: async (userId) => {
-        const user = await User.findById(userId);
-        return !!user?.classroomId;
+        const user = await User.exists({ _id: userId, classroomId: { $ne: null } });
+        return !!user;
     },
 
     // Check if pupil is in SPECIFIC classroom
-    isInClassroom: async (userId, classroomId) => {
-        const user = await User.findById(userId);
-        return user?.classroomId?.toString() === classroomId.toString();
-    },
+  isInClassroom: async (userId, classroomId) => {
+    // We check for a document that has THIS ID and THIS classroomId
+    const exists = await User.exists({ 
+        _id: userId, 
+        classroomId: classroomId 
+    });
+    return !!exists;
+},
 
     // Get all pupils in a classroom
     findPupilsByClassroom: async (classroomId) => {
@@ -57,13 +62,24 @@ const userRepository = {
             { new: true }
         );
     },
-    // Updating the points
-    updatePoints : async(userId , point) => {
+   deductPointsAtomic: async (userId, cost, session = null) => {
+        return await User.findOneAndUpdate(
+            { 
+                _id: userId, 
+                pointBalance: { $gte: cost } // The Security Check
+            },
+            { $inc: { pointBalance: -cost } },
+            { session, new: true, runValidators: true }
+        );
+    },
+
+    // Keep the general updatePoints for "Giving" points (where balance check doesn't matter)
+    updatePoints: async (userId, point, session = null) => {
         return await User.findByIdAndUpdate(
-            userId , 
-            {$inc : {pointBalance : point}},
-            { new: true }
-        )
+            userId, 
+            { $inc: { pointBalance: point } },
+            { session, new: true }
+        );
     }
 };
 
