@@ -81,7 +81,7 @@ router.post(
 );
 
 router.get(
-    "/rewards/class/:id/:pupilId",
+    "/class/:id/:pupilId",
     auth,
     requireTeacher,
     getPupilPurchasesForTeacher
