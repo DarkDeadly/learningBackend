@@ -27,10 +27,9 @@ const createReward = async (req, res) => {
 
 // Get all rewards (including expired) for a teacher to manage
 const getClassroomRewards = async (req, res) => {
-    const teacherId = req.user.id;
     const classroomId = req.params.id;
     try {
-        const { reward } = await rewardService.getByClassroom(teacherId, classroomId);
+        const { reward } = await rewardService.getByClassroom( classroomId);
         return res.status(200).json({ success: true, reward });
     } catch (error) {
         return handleServiceError(res, error);

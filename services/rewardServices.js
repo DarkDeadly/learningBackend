@@ -47,8 +47,7 @@ const rewardService = {
         return {success : true , reward : result}
     },
 
-    getByClassroom: async (teacherId, classroomId) => {
-         await verifyClassroomOwnership(teacherId, classroomId) 
+    getByClassroom: async ( classroomId) => {
         const result = await rewardRepository.findByClassroom(classroomId , true)
         return {reward : result}
     },

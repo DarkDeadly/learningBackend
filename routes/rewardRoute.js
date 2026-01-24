@@ -31,8 +31,7 @@ router.post(
 // Get all rewards for a class: GET /api/rewards/class/:id
 router.get(
     "/class/:id", 
-    auth, 
-    requireTeacher, 
+    auth,  
     getClassroomRewards
 );
 
