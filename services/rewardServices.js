@@ -3,6 +3,7 @@ import pointRepository from "../repositories/pointRepository.js";
 import purchaseRepository from "../repositories/purchaseRepository.js";
 import rewardRepository from "../repositories/rewardRepository.js";
 import userRepository from "../repositories/userRepository.js";
+import mongoose from 'mongoose';
 
 const verifyClassroomOwnership = async (teacherId, classroomId) => {
     const classroom = await classRepository.findById(classroomId);
