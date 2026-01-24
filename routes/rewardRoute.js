@@ -6,6 +6,7 @@ import {
     updateReward, 
     createReward, 
     getClassroomRewards,
+    getPupilPurchasesForTeacher,
     awardClassPoints // Our new bulk feature
 } from "../controller/reward-controller.js";
 import auth from "../middleware/auth.js";
@@ -78,5 +79,12 @@ router.post(
     requirePupil, 
     purchaseReward
 );
+
+router.get(
+    "/rewards/class/:id/:pupilId",
+    auth,
+    requireTeacher,
+    getPupilPurchasesForTeacher
+)
 
 export default router;

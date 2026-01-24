@@ -173,6 +173,27 @@ purchase: async (pupilId, rewardId) => {
     }
 },
 
+getPupilPurchaseHistory: async (pupilId, teacherId, classroomId) => {
+    // 1. Verify this teacher owns the classroom
+    await verifyClassroomOwnership(teacherId, classroomId);
+
+    // 2. Portfolio Tip: Extra validation to ensure Pupil belongs to this Class
+    // This demonstrates high security awareness for your portfolio
+    const pupil = await userRepository.findById(pupilId);
+    if (!pupil || pupil.classroomId?.toString() !== classroomId.toString()) {
+        throw new Error("هذا التلميذ غير مسجل في قسمك"); // "This pupil is not in your class"
+    }
+
+    // 3. Fetch history using your lean repository method
+    const history = await purchaseRepository.findByPupil(pupilId);
+    
+    return {
+        success: true,
+        count: history.length,
+        history
+    };
+},
+
 };
 
 export default rewardService;

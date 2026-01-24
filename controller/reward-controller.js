@@ -130,6 +130,24 @@ const purchaseReward = async (req, res) => {
     }
 };
 
+const getPupilPurchasesForTeacher = async (req, res) => {
+    const teacherId = req.user.id;
+    // Destructuring params for cleaner code
+    const { id: classroomId, pupilId } = req.params; 
+
+    try {
+        const result = await rewardService.getPupilPurchaseHistory(
+            pupilId, 
+            teacherId, 
+            classroomId
+        );
+        
+        return res.status(200).json(result);
+    } catch (error) {
+        // handleServiceError handles the 403 or 404 based on the error message
+        return handleServiceError(res, error);
+    }
+};
 export {
     getAvailableRewards, 
     createReward, 
@@ -137,5 +155,6 @@ export {
     updateReward, 
     getClassroomRewards, 
     purchaseReward,
-    awardClassPoints
+    awardClassPoints,
+    getPupilPurchasesForTeacher
 };
